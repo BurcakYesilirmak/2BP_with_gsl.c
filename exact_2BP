@@ -1,0 +1,115 @@
+
+    #include<stdio.h>
+    #include<math.h>
+   int main(int argc, char **argv) {
+    double r_vec[]= {-6.685074817026049E-01, 1.706558853671706E+00, -1.123043465687632E+00};    //  r[3]={X,Y,Z}  V[3]={Vx,Vy,Vz} ;
+    double v_vec[]= {-1.207950275095047E-02, -3.384553498022686E-03, 3.350958555890135E-03};
+  //  double t=2448893.500000000 ;   
+    double eccentricity_vec[3];
+    double dot1, dot2, norm_r, norm_v, norm_h, norm_N, norm_e, tau;
+    double hx, Lmb_x, Lmb_y, Lmb_z,h2, Lmb2,  ta, ta2, TA, TA2; 
+    double norm_Lmb, p, rc, A, B, C;
+    double a, i, j, k, inc, W, w1, w, e, t;
+    double X, Y, Z, Vx, Vy, Vz;
+    double k3=0.01720209895, mu;
+
+    mu=k3*k3; // 1 alınırsa yörünge elemanlarının hatası çok büyük geliyor ?
+
+
+   norm_r = sqrt(r_vec[0]* r_vec[0] + r_vec[1] * r_vec[1] + r_vec[2] * r_vec[2]);
+   norm_v = sqrt(v_vec[0]* v_vec[0] + v_vec[1] * v_vec[1] + v_vec[2] * v_vec[2]);
+   dot1 = (r_vec[0] * v_vec[0]) + (r_vec[1] * v_vec[1]) + (r_vec[2] * v_vec[2]);
+   dot2 = (v_vec[0] * v_vec[0]) + (v_vec[1] * v_vec[1]) + (v_vec[2] * v_vec[2]);
+
+        //calculation of eccentricty vector's component
+   for(int p=0;p<3;p++) { 
+   eccentricity_vec[p] = r_vec[p]*( dot2/mu - (1.0/norm_r)) - v_vec[p]* (dot1/mu); 
+   //printf("eccent_vec =%lf\n",eccentricity_vec[p]);
+   }
+    norm_e  = sqrt(pow(eccentricity_vec[0],2) + pow(eccentricity_vec[1],2) + pow(eccentricity_vec[2],2));  
+   // printf("eccentricity =%lf\n",norm_e); //absolute value of eccentricity 
+    
+    a = 1.0/((2.0/norm_r) - dot2/mu);
+  //  printf("semi major =%.15le\n",a-2.772555151371678E+00);
+
+        // angular momentum vector's components
+    i = r_vec[1] * v_vec[2] - r_vec[2] * v_vec[1] ;
+    j = r_vec[2] * v_vec[0] - r_vec[0] * v_vec[2] ;
+    k = r_vec[0] * v_vec[1] - r_vec[1] * v_vec[0] ;
+    h2 = i*i + j*j + k*k;
+    norm_h=sqrt(h2); // absolute value of h
+
+    //inclination angle 
+   inc = acos(k/norm_h)*180/M_PI;
+  //  printf("inclination angle =%.15le\n",inc-3.483701781143110E+01);
+
+   norm_N = sqrt(j*j+i*i); // ascending node vector's absolute value
+
+    // Longitude of ascending node angle 
+   W = acos(-j/norm_N)*180/M_PI;
+  //  printf("longitude of ascending node =%.15le\n",W-1.730825751770461E+02);
+
+    // Argument of Pericenter angle 
+    w1=(-j*eccentricity_vec[0]+i*eccentricity_vec[1])/(norm_e*norm_N);
+   if (eccentricity_vec[2]<0)
+   w = 360-(acos(w1)*180/M_PI);
+   else 
+   w = acos(w1)*180/M_PI;
+
+  //  printf("argument of pericenter =%.15le\n",w-3.100136877076421E+02);
+
+    ta = (eccentricity_vec[0]*r_vec[0]+eccentricity_vec[1]*r_vec[1]+eccentricity_vec[2]*r_vec[2])/(norm_e*norm_r);
+    TA = acos(ta)*180/M_PI;
+
+
+    // VECTORIAL APPROACH 
+
+  /*   // Laplace Vectorial Integral's Components
+    A = r_vec[0]*(v_vec[1]*v_vec[1]+v_vec[2]*v_vec[2])-v_vec[0]*(r_vec[1]*v_vec[1]+r_vec[2]*v_vec[2]);
+    B = r_vec[1]*(v_vec[1]*v_vec[1]+v_vec[0]*v_vec[0])-v_vec[1]*(r_vec[0]*v_vec[0]+r_vec[2]*v_vec[2]);
+    C = r_vec[2]*(v_vec[0]*v_vec[0]+v_vec[2]*v_vec[2])-v_vec[2]*(r_vec[0]*v_vec[0]+r_vec[1]*v_vec[1]);
+    Lmb_x = A- (mu*r_vec[0]/norm_r);
+    Lmb_y = A- (mu*r_vec[1]/norm_r);
+    Lmb_z = A- (mu*r_vec[2]/norm_r);
+    norm_Lmb = sqrt(Lmb_x*Lmb_x+Lmb_y*Lmb_y+Lmb_z*Lmb_z);  // Laplace Integral's absolute value */
+
+    p =norm_h*norm_h/mu; // rc = a*(1-eccentricity**2)
+    rc = a*(1-norm_e*norm_e);
+    e= norm_Lmb/mu;
+   // printf(" e from Lambda/mu = %lf\n",e);
+  //  printf(" e from eccentric vector = %.16le\n",norm_e-2.304514132565135E-01);
+       // printf(" semiparameter(p) from h^2/mu = %.15lf\n",p);
+       // printf(" semiparameter(p) from a*(1-e^2) = %.15lf\n",rc);
+
+       ta2= (p/norm_r-1) / norm_e;
+       TA2= acos(ta2)*180/M_PI;
+      //  printf("true anomaly r*e/norm(r*e) =%.15lf\n",TA);
+      //  printf("true anomaly from equation =%.15lf\n",TA2);
+      //  printf("true anomaly from equation =%.15le\n",TA-TA2);
+
+      t= w+TA;
+      // cartesian to ecliptic coordinates transformation
+      X= norm_r*(cos(W)*cos(t)-sin(W)*sin(t)*cos(i));
+      Vx= -norm_v*(sin(t)*cos(W)+sin(W)*cos(i)*cos(t));
+
+      Y= norm_r*(sin(W)*cos(t)+cos(W)*sin(t)*cos(i));
+      Vy= norm_v*(-sin(t)*sin(W)+cos(W)*cos(i)*cos(t));
+
+      Z= norm_r*sin(t)*sin(i);
+      Vz= norm_v*sin(i)*cos(t);
+       
+        printf("X =%.15lf\n",X);
+        printf("Vx=%.15lf\n\n",Vx);
+        printf("Y =%.15lf\n",Y);
+        printf("Vy=%.15lf\n\n",Vy);
+        printf("Z =%.15lf\n",Z);
+        printf("Vz=%.15lf\n",Vz);
+        
+
+       return 0; 
+    }
+
+
+
+
+    
