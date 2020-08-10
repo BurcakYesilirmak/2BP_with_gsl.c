@@ -1,0 +1,108 @@
+#include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+ #include<string.h>
+ #include<math.h>
+
+
+  typedef struct {
+  double X , Xl, Vx, Vxl;
+  double Y , Yl, Vy, Vyl;
+  double Z , Zl, Vz, Vzl;
+  double t;
+  double xh1, xl1, xh2, xl2, xh3, xl3; 
+  double xh11, xl11, xh22, xl22, xh33, xl33; 
+ } value;
+
+
+// COMPARISON OF NUMBERS FOR EACH COLUMN
+
+void TwoSum(double a, double b,double *xh, double *xl) {
+double a1 ,b1 ,del_a ,del_b;
+*xh= a+b;
+a1= *xh-b;
+b1= *xh-a1;
+del_a = a-a1;
+del_b = b-b1;
+*xl = del_a+del_b;
+}
+
+//Pichat and Neumaier’s summation algorithm
+void Summation2(double xh1, double xl1, double xh2, double xl2,double *xh3, double *xl3 ){  
+  double t,s,u,v,z;
+  TwoSum(xh1, xh2, &t, &s);
+  TwoSum(xl1, xl2, &u, &v);
+  z= v+s+u; 
+  //F2Sum(t, z, xh3, xl3);
+  *xh3=t;
+  *xl3=z; 
+} 
+int main(int argc, char **argv)
+{
+        double X, Y, Z, Vx, Vy, Vz, Vxl, Vyl, Vzl, Xl, Yl, Zl, t;
+        long int line1 =10001, line2=10002, i;
+        value *ordinary_pos, *ordinary_vel, *accurate_pos, *accurate_vel;
+        value inp[10001];
+        double xh1, xl1, xh2, xl2, xh3, xl3, xh11, xl11, xh22, xl22, xh33, xl33;
+        FILE *in;
+
+        ordinary_pos=(value *)malloc(sizeof(value)*line1);
+        accurate_pos=(value *)malloc(sizeof(value)*line2);
+        ordinary_vel=(value *)malloc(sizeof(value)*line1);
+        accurate_vel=(value *)malloc(sizeof(value)*line2);
+
+                // For Position 
+     
+           in = fopen("ADAMS_Rh_Rl.txt","r");
+          // reading file into allocated memory
+          for(i=0; i<line1; i++)
+          fscanf(in,"%lf %lf %lf %lf\n", &ordinary_pos[i].t, &ordinary_pos[i].X, &ordinary_pos[i].Y, &ordinary_pos[i].Z);
+          fclose(in);
+
+          in = fopen("TEST_Rh_Rl.txt","r");
+          fscanf(in,"%*f %*f %*f %*f %*f %*f %*f\n"); //skip first line
+          for(i=0; i<line2; i++)
+          fscanf(in,"%lf %lf %lf %lf %lf %lf %lf \n", &accurate_pos[i].t, &accurate_pos[i].X, &accurate_pos[i].Y, &accurate_pos[i].Z, &accurate_pos[i].Xl, &accurate_pos[i].Yl, &accurate_pos[i].Zl);
+          fclose(in);
+
+           printf(" %lf, %lf  , %.9lf \n",ordinary_pos[2].X, ordinary_pos[3].X ,accurate_pos[5].Y);
+
+
+           in=fopen("TEST_RESULT_POSITION.txt","w");
+           double o=0;
+            for(i=0; i<line2; i++) { 
+            Summation2(ordinary_pos[i].X, o, -accurate_pos[i].X, -accurate_pos[i].Xl, &inp[i].xh1, &inp[i].xl1);
+            Summation2(ordinary_pos[i].Y, o, -accurate_pos[i].Y, -accurate_pos[i].Yl, &inp[i].xh2, &inp[i].xl2);
+            Summation2(ordinary_pos[i].Z, o, -accurate_pos[i].Z, -accurate_pos[i].Zl, &inp[i].xh3, &inp[i].xl3);
+            fprintf(in,"%f %.15lf %.15lf %.15lf %.15lf %.15lf %.15lf\n", ordinary_pos[i].t, inp[i].xh1, inp[i].xl1, inp[i].xh2, inp[i].xl2, inp[i].xh3, inp[i].xl3); } 
+            fclose(in);
+        
+          // For Velocity
+          in = fopen("ADAMS_Vh_Vl.txt","r");
+          // reading file into allocated memory
+          for(i=0; i<line1; i++)
+          fscanf(in,"%lf %lf %lf %lf\n", &ordinary_vel[i].t, &ordinary_vel[i].Vx, &ordinary_vel[i].Vy, &ordinary_vel[i].Vz);
+          fclose(in);
+
+          in = fopen("TEST_Vh_Vl.txt","r");
+          fscanf(in,"%*f %*f %*f %*f %*f %*f %*f\n"); //skip first line
+          for(i=0; i<line2; i++)
+          fscanf(in,"%lf %lf %lf %lf %lf %lf %lf \n", &accurate_vel[i].t, &accurate_vel[i].Vx, &accurate_vel[i].Vy, &accurate_vel[i].Vz, &accurate_vel[i].Vxl, &accurate_vel[i].Vyl, &accurate_vel[i].Vzl);
+          fclose(in);
+         
+           printf(" %lf, %lf %.17lf \n",ordinary_vel[2].Vx, ordinary_vel[4].Vx, accurate_vel[7].Vzl);
+           printf("Check is ok\n");
+
+                      in=fopen("TEST_RESULT_VELOCITY.txt","w");
+            for(i=0; i<line2; i++) { 
+            Summation2(ordinary_vel[i].Vx, o, -accurate_vel[i].Vz, -accurate_vel[i].Vxl, &inp[i].xh11, &inp[i].xl11);
+            Summation2(ordinary_vel[i].Vy, o, -accurate_vel[i].Vy, -accurate_vel[i].Vyl, &inp[i].xh22, &inp[i].xl22);
+            Summation2(ordinary_vel[i].Vz, o, -accurate_vel[i].Vx, -accurate_vel[i].Vzl, &inp[i].xh33, &inp[i].xl33);
+            fprintf(in,"%f %.15lf %.15lf %.15lf %.15lf %.15lf %.15lf\n", ordinary_pos[i].t, inp[i].xh11, inp[i].xl11, inp[i].xh22, inp[i].xl22, inp[i].xh33, inp[i].xl33); } 
+            fclose(in);
+             return (0);
+}
+
+
+
+
