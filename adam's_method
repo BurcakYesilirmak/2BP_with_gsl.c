@@ -1,3 +1,7 @@
+    /* JPL/HORIZONS 2 Pallas (A802 FA)     
+     Coordinate Origin :	Sun (body center) [500@10]
+     Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
+     
 #include <stdio.h>
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
@@ -18,9 +22,16 @@ func (double t,const double y[], double f[],
   f[0] = y[3];  //Vx
   f[1] = y[4];  //Vy
   f[2] = y[5];  //Vz
+  
+     /*    printf("%.16le\n", -mu*y[0]/p);
+                  printf("%.16le\n", -mu*y[1]/p);
+                           printf("%.16le\n", -mu*y[2]/p);
+    exit(1);  */ 
+
   f[3] = -mu*y[0]/p;   // -mu*x/(x^2+y^2+z^2)^3/2
   f[4] = -mu*y[1]/p;   // -mu*y/(x^2+y^2+z^2)^3/2
   f[5] = -mu*y[2]/p;   // -mu*z/(x^2+y^2+z^2)^3/2
+
   return GSL_SUCCESS;
 }
 
@@ -33,6 +44,8 @@ jac (double t,const double y[], double *dfdy,
     double k;
   k = y[0]*y[0]+y[1]*y[1]+y[2]*y[2];
   double r=k*sqrt(k);
+  double constant;
+  constant = mu/r*k;
   gsl_matrix_view dfdy_mat
     = gsl_matrix_view_array (dfdy, 6, 6);
 
@@ -56,21 +69,21 @@ jac (double t,const double y[], double *dfdy,
   gsl_matrix_set (m, 2, 3, 0.0);
   gsl_matrix_set (m, 2, 4, 0.0);
   gsl_matrix_set (m, 2, 5, 1.0);
-  gsl_matrix_set (m, 3, 0, mu*(2*y[0]*y[0]-(y[1]*y[1]+y[2]*y[2]))/(r*k));
-  gsl_matrix_set (m, 3, 1, 3*mu*y[0]*y[1]/(r*k));
-  gsl_matrix_set (m, 3, 2, 3*mu*y[0]*y[2]/(r*k));
+  gsl_matrix_set (m, 3, 0, (3*y[0]*y[0]-k)*constant);
+  gsl_matrix_set (m, 3, 1, 3*y[0]*y[1]*constant);
+  gsl_matrix_set (m, 3, 2, 3*y[0]*y[2]*constant);
   gsl_matrix_set (m, 3, 3, 0.0);
   gsl_matrix_set (m, 3, 4, 0.0);
   gsl_matrix_set (m, 3, 5, 0.0);
-  gsl_matrix_set (m, 4, 0, 3*mu*y[1]*y[0]/(r*k));
-  gsl_matrix_set (m, 4, 1, mu*(2*y[1]*y[1]-(y[0]*y[0]+y[2]*y[2]))/(r*k));
-  gsl_matrix_set (m, 4, 2, 3*mu*y[1]*y[2]/(r*k));
+  gsl_matrix_set (m, 4, 0, 3*constant*y[1]*y[0]);
+  gsl_matrix_set (m, 4, 1, (3*y[1]*y[1]-k)*constant);
+  gsl_matrix_set (m, 4, 2, 3*constant*y[1]*y[2]);
   gsl_matrix_set (m, 4, 3, 0.0);
   gsl_matrix_set (m, 4, 4, 0.0);
   gsl_matrix_set (m, 4, 5, 0.0);
-  gsl_matrix_set (m, 5, 0, 3*mu*y[2]*y[0]/(r*k));
-  gsl_matrix_set (m, 5, 1, 3*mu*y[2]*y[1]/(r*k));
-  gsl_matrix_set (m, 5, 2, mu*(2*y[2]*y[2]-(y[0]*y[0]+y[1]*y[1]))/(r*k));
+  gsl_matrix_set (m, 5, 0, 3*constant*y[0]*y[2]);
+  gsl_matrix_set (m, 5, 1, 3*constant*y[1]*y[2]);
+  gsl_matrix_set (m, 5, 2, (3*y[2]*y[2]-k)*constant);
   gsl_matrix_set (m, 5, 3, 0.0);
   gsl_matrix_set (m, 5, 4, 0.0);
   gsl_matrix_set (m, 5, 5, 0.0);
@@ -84,6 +97,9 @@ jac (double t,const double y[], double *dfdy,
   dfdt[5] = 0.0;  
   return GSL_SUCCESS;
 }
+    /* JPL/HORIZONS 2 Pallas (A802 FA)     
+     Coordinate Origin :	Sun (body center) [500@10]
+     Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
 
 int
 main (void)
@@ -92,23 +108,34 @@ main (void)
     mu= k3*k3; 
   gsl_odeiv2_system sys = {func, jac, 6, &mu};
 // time step parameters 
-  double t = 0.0, t_step=0.01, T=1000;
+  double t = 0.0, t_step=1, T=3000;
 // Select explicit method
   const gsl_odeiv2_step_type * st = gsl_odeiv2_step_msadams;
   //set errors and create the driver object
-  double abserr = 1e-10;
-  double relerr = 0.0;
+  double abserr = 1e-16;
+  double relerr = 1e-14;
 
   gsl_odeiv2_driver* driver= 
     gsl_odeiv2_driver_alloc_y_new(&sys, st, t_step, abserr, relerr);
-  double y[6] = { -6.685075643890280E-01, 1.706558779772845E+00, -1.123043436831628E+00, -1.207950278464835E-02,-3.384553931794463E-03,3.350958907738935E-03};
-   //double y[6]= {1, 0, 0, 0, 0.1, 0};
-      while (t<T) {
-      gsl_odeiv2_driver_apply (driver, &t, t+t_step, y); 
-            printf ("%.5le %.5le %.5le %.5le %.5le %.5le %.5le\n", t, y[0], y[1],  y[2], y[3],  y[4], y[5]);}
+   double y[6] ={-6.685074817026049E-01, 1.706558853671706E+00, -1.123043465687632E+00, -1.207950275095047E-02, -3.384553498022686E-03, 3.350958555890135E-03};
+     // comparison of initial time moment with accurate calculation
+    // printf ("%.16le %.22le %.22le %.22le \n", t, y[0], y[1],  y[2]);   
+           FILE *kk, *pp;
+        kk=fopen("ADAMS3_Rh_Rl.txt","w");
+        pp=fopen("ADAMS3_Vh_Vl.txt","w");  
+        while (t <= T) {
+            gsl_odeiv2_driver_apply (driver, &t, t+t_step, y); 
+                // Xh Yh Zh Xl Yl Zl Vxh Vyh Vzh Vxl Vyl Vzl  
+                fprintf(kk,"%f  %.16le %.16le %.16le \n", t, y[0], y[1],  y[2]);
+              fprintf(pp,"%f  %.16le %.16le %.16le \n", t, y[3],  y[4], y[5]);
+     //printf ("%.16le %.16le %.16le %.16le %.16le %.16le %.16le\n", t, y[0], y[1],  y[2], y[3],  y[4], y[5]);
+            }
   gsl_odeiv2_driver_free (driver);
+                     fclose(kk);
+                     fclose(pp);
   return 0;
 }
 
 
 
+//gcc -Wall -I/usr/local/Cellar/gsl/2.6/include gsl_adams.c  -L/usr/local/Cellar/gsl/2.6/lib -lgsl -lgslcblas -lm -o gsl_adams
