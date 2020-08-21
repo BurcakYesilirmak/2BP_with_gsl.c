@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+#include<math.h>
+#include<glob.h>   // Operate different files from directory
+
+typedef struct {
+  double X ;
+  double Y ;
+  double Z ;
+  double t;
+ } timepos;
+
+typedef struct{
+   timepos integ[2001];
+   int releps;
+   int abseps;
+   double max;
+ } data;
+
+// Chebyschev Distance : max(|x2 - x1|, |y2 - y1|, |z2 - z1|)
+
+void Chebyschev_Distance(double X1, double Y1, double Z1, double X2, double Y2, double Z2, double *max) {
+double X, Y, Z;
+double max_x, max_y, max_z;
+int i;
+
+             /*    printf("x1 = %.16lf x2 = %.16le x1-x2 = %.16le\n", X1, X2, fabs(X1-X2) );                  
+                  printf("y1 = %.16lf y2 = %.16le y1-y2 = %.16le\n", Y1, Y2, fabs(Y1-Y2) );  
+                  printf("z1 = %.16lf z2 = %.16le z1-z2 = %.16le\n", Z1, Z2, fabs(Z1-Z2) );  */
+                 
+                 
+
+//finding maximum absolute value of the vector
+
+        X = fabs(X1-X2);
+        Y = fabs(Y1-Y2);
+        Z = fabs(Z1-Z2); 
+
+    max_x = X;
+    max_y = Y;
+    max_z = Z;
+     
+    *max =max_x;
+    if(max_y>*max) *max=max_y;
+    if(max_z>*max) *max=max_z;
+
+       //  printf("max = %.16le\n", *max);  
+             //  exit(1); 
+      } 
+
+
+int main(int argc, char **argv)
+{
+        double X, Y, Z, t, tmax;
+        int k;
+        long int line1 =2000, line2=2001, i;
+        int maxl;
+        data *val; // val related to function's arguments and the number of files 
+       
+        FILE *in;
+        glob_t files; // structer of files
+        const char *pattern="ADAMS3_*.txt";  // finding files starting adams and finish with .txt
+        glob(pattern, GLOB_ERR, NULL, &files); // function thats makes search 
+
+        maxl=(int)files.gl_pathc;// number of files that glob find 
+        val=(data *)malloc(sizeof(data)*maxl); // memory allocation for maximum value
+
+        for(k=0; k<maxl; k++){
+          sscanf(files.gl_pathv[k]+7, "%d_%d", &val[k].releps, &val[k].abseps);  //find place of numbers and take their value exactly
+
+          in=fopen(files.gl_pathv[k], "r"); // open files from 1 to the end , the last is the reference , maxl = 25 
+           // printf("%s %d %d\n", files.gl_pathv[k], val[k].releps, val[k].abseps);
+        for(i=0; i<2001; i++){
+          fscanf(in, "%lf %lf %lf %lf", &val[k].integ[i].t, &val[k].integ[i].X, &val[k].integ[i].Y, &val[k].integ[i].Z);  // take each component of each files
+          }
+            fclose(in);
+        }
+
+      for(k=0 ; k<maxl-1; k++) {  // subtract reference and find the maximum Chebyschev Distance of each file 
+        val[k].max=0.0;
+        for(i=0; i<2001; i++){
+          Chebyschev_Distance(val[24].integ[i].X, val[24].integ[i].Y, val[24].integ[i].Z, val[k].integ[i].X, val[k].integ[i].Y, val[k].integ[i].Z, &tmax);
+          if(tmax>val[k].max) val[k].max=tmax;} }  
+
+           for( i=0; i<maxl; i++) {
+  printf("%le %d %d\n",val[i].max, val[i].releps, val[i].abseps); 
+       } 
+
+
+globfree(&files);
+return (0);
+
+}
+/*   abs_err= 1e-17 and rel_err= 1e-17 is the reference  
+max 0 = 5.1808904388828125e-12  for 17_16
+max 1 = 7.5971728907830993e-12  for 17_15
+max 2 = 1.7220433065623375e-10  for 17_14
+max 3 = 1.0761295674011073e-10  for 17_13
+max 4 = 2.2691570844557418e-12  for 16_17
+max 5 = 3.6434119610184723e-12  for 16_16
+max 6 = 4.3538228577943983e-11  for 16_15
+max 7 = 2.4934401071652346e-10  for 16_14
+max 8 = 6.9003742737133722e-10  for 16-13
+max 9 = 3.5452307756145274e-11  for 15_17
+max 10 = 4.1719225296610318e-11 for 15_16
+max 11 = 1.1131079391546450e-10 for 15_15
+max 12 = 7.1962227843336279e-12 for 15_14
+max 13 = 1.3782289892683153e-09 for 15_13
+*/
+
+
