@@ -41,53 +41,55 @@ jac (double t,const double y[], double *dfdy,
 {
   (void)(t); 
   double mu = *(double *)params;
-    double k;
-  k = y[0]*y[0]+y[1]*y[1]+y[2]*y[2];
-  double r=k*sqrt(k);
+  double p;
+  int i,k ;
+  double k2 = y[0]*y[0]+y[1]*y[1]+y[2]*y[2];
+  double r=k2*sqrt(k2);
   double constant;
-  constant = mu/r*k;
+  constant = mu/r*k2;
   gsl_matrix_view dfdy_mat
     = gsl_matrix_view_array (dfdy, 6, 6);
 
   // fill the Jacobian matrix 
   gsl_matrix * m = &dfdy_mat.matrix;
-  gsl_matrix_set (m, 0, 0, 0.0);
-  gsl_matrix_set (m, 0, 1, 0.0);
-  gsl_matrix_set (m, 0, 2, 0.0);
-  gsl_matrix_set (m, 0, 3, 1.0);
-  gsl_matrix_set (m, 0, 4, 0.0);
-  gsl_matrix_set (m, 0, 5, 0.0);
-  gsl_matrix_set (m, 1, 0, 0.0);
-  gsl_matrix_set (m, 1, 1, 0.0);
-  gsl_matrix_set (m, 1, 2, 0.0);
-  gsl_matrix_set (m, 1, 3, 0.0);
-  gsl_matrix_set (m, 1, 4, 1.0);
-  gsl_matrix_set (m, 1, 5, 0.0);
-  gsl_matrix_set (m, 2, 0, 0.0);
-  gsl_matrix_set (m, 2, 1, 0.0);
-  gsl_matrix_set (m, 2, 2, 0.0);
-  gsl_matrix_set (m, 2, 3, 0.0);
-  gsl_matrix_set (m, 2, 4, 0.0);
-  gsl_matrix_set (m, 2, 5, 1.0);
-  gsl_matrix_set (m, 3, 0, (3*y[0]*y[0]-k)*constant);
+
+       // Part 1 for zeros
+    for (i=0 ; i<=2; i++) {
+      for(k=0; k<=2; k++){
+         p=0.0; 
+        gsl_matrix_set (m, i, k, p);
+      } }
+
+    // Part 1 for one and zeros
+          p=0;  
+    for (i=0 ; i<=2; i++) {
+      for(k=3; k<=5; k++){
+        if ( k-i == 3)
+          p= 1.0; 
+           else if ( k-i != 6)
+           p=0.0;
+            gsl_matrix_set (m, i, k, p);
+    } }
+
+      //Part 2 for zeros
+         p=0.0;
+    for (i=3 ; i<=5; i++) {
+      for( k=3; k<=5; k++){
+            gsl_matrix_set (m, i, k, p);
+      } }
+
+  gsl_matrix_set (m, 3, 0, (3*y[0]*y[0]-k2)*constant);
   gsl_matrix_set (m, 3, 1, 3*y[0]*y[1]*constant);
   gsl_matrix_set (m, 3, 2, 3*y[0]*y[2]*constant);
-  gsl_matrix_set (m, 3, 3, 0.0);
-  gsl_matrix_set (m, 3, 4, 0.0);
-  gsl_matrix_set (m, 3, 5, 0.0);
+
   gsl_matrix_set (m, 4, 0, 3*constant*y[1]*y[0]);
-  gsl_matrix_set (m, 4, 1, (3*y[1]*y[1]-k)*constant);
+  gsl_matrix_set (m, 4, 1, (3*y[1]*y[1]-k2)*constant);
   gsl_matrix_set (m, 4, 2, 3*constant*y[1]*y[2]);
-  gsl_matrix_set (m, 4, 3, 0.0);
-  gsl_matrix_set (m, 4, 4, 0.0);
-  gsl_matrix_set (m, 4, 5, 0.0);
+
   gsl_matrix_set (m, 5, 0, 3*constant*y[0]*y[2]);
   gsl_matrix_set (m, 5, 1, 3*constant*y[1]*y[2]);
-  gsl_matrix_set (m, 5, 2, (3*y[2]*y[2]-k)*constant);
-  gsl_matrix_set (m, 5, 3, 0.0);
-  gsl_matrix_set (m, 5, 4, 0.0);
-  gsl_matrix_set (m, 5, 5, 0.0);
-
+  gsl_matrix_set (m, 5, 2, (3*y[2]*y[2]-k2)*constant);
+  
 // set explicit t dependence of f[i] 
   dfdt[0] = 0.0;
   dfdt[1] = 0.0;
