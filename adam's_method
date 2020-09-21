@@ -99,11 +99,9 @@ jac (double t,const double y[], double *dfdy,
   dfdt[5] = 0.0;  
   return GSL_SUCCESS;
 }
-    /* JPL/HORIZONS 2 Pallas (A802 FA)     
-     Coordinate Origin :	Sun (body center) [500@10]
-     Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
 
-int
+// JUST FOR ONE RELATIVE AND ABSOLUTE VALUE :
+/* int
 main (void)
 {
    double k3=0.01720209895, mu ;
@@ -136,8 +134,52 @@ main (void)
                      fclose(kk);
                      fclose(pp);
   return 0;
+} */
+
+// FOR MULTİPLE RELATIVE AND ABSOLUTE VALUES :
+
+ void integrator_adams(double abserr[10], double relerr[10]) {
+
+  double k3=0.01720209895, mu ;
+    mu= k3*k3; 
+    gsl_odeiv2_system sys = {func, jac, 6, &mu}; 
+    
+    // time step parameters 
+  double t = 0.0, t_step=1, T=2000;
+    
+    // Select explicit method
+  const gsl_odeiv2_step_type * st = gsl_odeiv2_step_msadams;
+
+  //set errors and create the driver object
+    gsl_odeiv2_driver* driver= 
+      gsl_odeiv2_driver_alloc_y_new(&sys, st, t_step, *abserr, *relerr);
+double y[6] ={-6.685074817026049E-01, 1.706558853671706E+00, -1.123043465687632E+00, -1.207950275095047E-02, -3.384553498022686E-03, 3.350958555890135E-03};
+
+        while (t <= T) {
+            gsl_odeiv2_driver_apply (driver, &t, t+t_step, y); 
+           // printf ("%.16le %.16le %.16le %.16le \n", t, y[0], y[1], y[2]);            
+            printf ("%.16le %.16le %.16le %.16le \n", t, y[3], y[4], y[5]);
+            }
+  gsl_odeiv2_driver_free (driver);
 }
+    int main (void) 
+    {
+      int i, k;
+      double abserr, relerr;
+      //RELATIVE AND ABSOLUTE ERROR VALUES
+      double abs[10] = {1e-13, 5e-13, 1e-14, 5e-14, 1e-15, 5e-15, 1e-16, 5e-16, 1e-17, 5e-17};
+      double rel[10] = {1e-13, 5e-13, 1e-14, 5e-14, 1e-15, 5e-15, 1e-16, 5e-16, 1e-17, 5e-17};
 
-
+      //COMBINE ERRORS  
+      for( i=0; i<10 ; i++) {
+        for( k=0; k<10 ; k++) {
+          abserr= abs[i];
+          relerr= rel[k];
+          //integrator_adams(&abserr, &relerr); 
+     //  printf ("%.16le %.16le \n", abserr, relerr);
+      } } 
+      integrator_adams(&abserr, &relerr); 
+      return 0; 
+    } 
 
 //gcc -Wall -I/usr/local/Cellar/gsl/2.6/include gsl_adams.c  -L/usr/local/Cellar/gsl/2.6/lib -lgsl -lgslcblas -lm -o gsl_adams
