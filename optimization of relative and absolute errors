@@ -1,3 +1,6 @@
+// This code finds the Chebyschev Distance of multiple files
+// Burcak Yesilirmak
+
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,13 +28,9 @@ void Chebyschev_Distance(double X1, double Y1, double Z1, double X2, double Y2, 
 double X, Y, Z;
 double max_x, max_y, max_z;
 int i;
-
-             /*    printf("x1 = %.16lf x2 = %.16le x1-x2 = %.16le\n", X1, X2, fabs(X1-X2) );                  
+             /*   printf("x1 = %.16lf x2 = %.16le x1-x2 = %.16le\n", X1, X2, fabs(X1-X2) );                  
                   printf("y1 = %.16lf y2 = %.16le y1-y2 = %.16le\n", Y1, Y2, fabs(Y1-Y2) );  
-                  printf("z1 = %.16lf z2 = %.16le z1-z2 = %.16le\n", Z1, Z2, fabs(Z1-Z2) );  */
-                 
-                 
-
+                  printf("z1 = %.16lf z2 = %.16le z1-z2 = %.16le\n", Z1, Z2, fabs(Z1-Z2) );  */             
 //finding maximum absolute value of the vector
 
         X = fabs(X1-X2);
@@ -41,7 +40,7 @@ int i;
     max_x = X;
     max_y = Y;
     max_z = Z;
-     
+    
     *max =max_x;
     if(max_y>*max) *max=max_y;
     if(max_z>*max) *max=max_z;
@@ -49,8 +48,6 @@ int i;
        //  printf("max = %.16le\n", *max);  
              //  exit(1); 
       } 
-
-
 int main(int argc, char **argv)
 {
         double X, Y, Z, t, tmax;
@@ -87,8 +84,6 @@ int main(int argc, char **argv)
            for( i=0; i<maxl; i++) {
   printf("%le %d %d\n",val[i].max, val[i].releps, val[i].abseps); 
        } 
-
-
 globfree(&files);
 return (0);
 
