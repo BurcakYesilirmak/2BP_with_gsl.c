@@ -1,7 +1,10 @@
     /* JPL/HORIZONS 2 Pallas (A802 FA)     
      Coordinate Origin :	Sun (body center) [500@10]
      Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
-     
+  
+  // This code calculates 2BP using gnu scientific library, we will call this calculation as double arithmetics
+  // Burcak Yesilirmak 09/2020, Akdeniz University
+  
 #include <stdio.h>
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
