@@ -104,7 +104,7 @@ jac (double t,const double y[], double *dfdy,
      Coordinate Origin :	Sun (body center) [500@10]
      Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
 
-  void integrator_adams(double abserr, double relerr) {
+/*  void integrator_adams(double abserr, double relerr) {
 
   double k3=0.01720209895, mu ;
     mu= k3*k3; 
@@ -142,9 +142,7 @@ jac (double t,const double y[], double *dfdy,
           //  fclose(out);
            // fclose(out2); 
           }
-
-/*    int main (void) 
-    {
+    int main (void) {
       int i, k;
       double abserr, relerr;
       //RELATIVE AND ABSOLUTE ERROR VALUES
