@@ -1,3 +1,5 @@
+// This code calculates the difference of components for one file
+// Burcak Yesilirmak
 
 #include <stdio.h>
 #include <stdio.h>
