@@ -1,6 +1,9 @@
     /* JPL/HORIZONS 2 Pallas (A802 FA)     
      Coordinate Origin :	Sun (body center) [500@10]
      Time Span [change] : 	Start=2018-06-05, Stop=2019-06-05, Step=1 d */
+     
+// This code calculates the exact/analytical solution of 2BP with two methods and finds the orbital elements of Pallas
+// Burcak Yesilirmak
 
     #include<stdio.h>
     #include<math.h>
